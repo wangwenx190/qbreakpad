@@ -37,11 +37,7 @@
 #elif defined(Q_OS_MACOS)
 #include <client/mac/handler/exception_handler.h>
 #endif
-#endif
 
-Q_GLOBAL_STATIC(QBreakpad, qBreakpad)
-
-#if LIBQBREAKPAD_HAS_BREAKPAD
 namespace {
 
 QScopedPointer<google_breakpad::ExceptionHandler> m_crashHandler;
@@ -154,16 +150,7 @@ VOID PurecallHandlerFunc()
 } // namespace
 #endif
 
-QBreakpad *QBreakpad::getInstance()
-{
-    return qBreakpad();
-}
-
-QBreakpad::QBreakpad() {}
-
-QBreakpad::~QBreakpad() = default;
-
-void QBreakpad::initCrashHandler(const QString &value)
+void qbreakpad_initCrashHandler(const QString &value)
 {
 #if LIBQBREAKPAD_HAS_BREAKPAD
     if (!m_crashHandler.isNull() || value.isEmpty()) {
@@ -189,7 +176,7 @@ void QBreakpad::initCrashHandler(const QString &value)
     _CrtSetReportMode(_CRT_ASSERT, 0);
 
     m_blockUnhandledExceptionFilter = true;
-    m_kernel32Intercept.Init(L"kernel32.dll");
+    m_kernel32Intercept.Init(L"Kernel32");
     if (!m_kernel32Intercept.AddHook("SetUnhandledExceptionFilter",
                                      reinterpret_cast<intptr_t>(SetUnhandledExceptionFilterPatched),
                                      reinterpret_cast<void **>(
@@ -214,7 +201,7 @@ void QBreakpad::initCrashHandler(const QString &value)
 #endif
 }
 
-bool QBreakpad::writeMiniDump()
+bool qbreakpad_writeMiniDump()
 {
 #if LIBQBREAKPAD_HAS_BREAKPAD
 #ifdef Q_OS_WINDOWS
@@ -232,7 +219,7 @@ bool QBreakpad::writeMiniDump()
 #endif
 }
 
-void QBreakpad::setReporterPath(const QString &value)
+void qbreakpad_setReporterPath(const QString &value)
 {
 #if LIBQBREAKPAD_HAS_BREAKPAD
     if (value.isEmpty()) {
@@ -248,7 +235,7 @@ void QBreakpad::setReporterPath(const QString &value)
 #endif
 }
 
-void QBreakpad::setReporterDumpFileArgument(const QString &value)
+void qbreakpad_setReporterDumpFileArgument(const QString &value)
 {
 #if LIBQBREAKPAD_HAS_BREAKPAD
     if (m_dumpFileArgument != value) {
@@ -259,7 +246,7 @@ void QBreakpad::setReporterDumpFileArgument(const QString &value)
 #endif
 }
 
-void QBreakpad::setReporterLogFileArgument(const QString &value)
+void qbreakpad_setReporterLogFileArgument(const QString &value)
 {
 #if LIBQBREAKPAD_HAS_BREAKPAD
     if (m_logFileArgument != value) {
@@ -270,7 +257,7 @@ void QBreakpad::setReporterLogFileArgument(const QString &value)
 #endif
 }
 
-void QBreakpad::setReporterCommonArguments(const QStringList &value)
+void qbreakpad_setReporterCommonArguments(const QStringList &value)
 {
 #if LIBQBREAKPAD_HAS_BREAKPAD
     if (m_crashReporterArguments != value) {
@@ -281,7 +268,7 @@ void QBreakpad::setReporterCommonArguments(const QStringList &value)
 #endif
 }
 
-void QBreakpad::setLogFilePath(const QString &value)
+void qbreakpad_setLogFilePath(const QString &value)
 {
 #if LIBQBREAKPAD_HAS_BREAKPAD
     if (value.isEmpty()) {
@@ -297,7 +284,7 @@ void QBreakpad::setLogFilePath(const QString &value)
 #endif
 }
 
-void QBreakpad::setDumpFileExtName(const QString &value)
+void qbreakpad_setDumpFileExtName(const QString &value)
 {
 #if LIBQBREAKPAD_HAS_BREAKPAD
     if (value.isEmpty()) {

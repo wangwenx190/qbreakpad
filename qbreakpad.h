@@ -26,22 +26,19 @@
 
 #include <QStringList>
 
-class QBreakpad
-{
-    Q_DISABLE_COPY_MOVE(QBreakpad)
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-public:
-    explicit QBreakpad();
-    ~QBreakpad();
+void qbreakpad_initCrashHandler(const QString &value);
+bool qbreakpad_writeMiniDump();
+void qbreakpad_setReporterPath(const QString &value);
+void qbreakpad_setReporterCommonArguments(const QStringList &value);
+void qbreakpad_setReporterDumpFileArgument(const QString &value);
+void qbreakpad_setReporterLogFileArgument(const QString &value);
+void qbreakpad_setLogFilePath(const QString &value);
+void qbreakpad_setDumpFileExtName(const QString &value);
 
-    static QBreakpad *getInstance();
-
-    void initCrashHandler(const QString &value);
-    bool writeMiniDump();
-    void setReporterPath(const QString &value);
-    void setReporterCommonArguments(const QStringList &value);
-    void setReporterDumpFileArgument(const QString &value);
-    void setReporterLogFileArgument(const QString &value);
-    void setLogFilePath(const QString &value);
-    void setDumpFileExtName(const QString &value);
-};
+#ifdef __cplusplus
+}
+#endif
