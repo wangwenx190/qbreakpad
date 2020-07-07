@@ -29,8 +29,9 @@
 #endif
 
 #include <stdint.h>
-#include <winternl.h>
+#include <stdio.h>
 #include <windows.h>
+#include <winternl.h>
 
 class WindowsDllNopSpacePatcher
 {
@@ -54,9 +55,9 @@ public:
             byteptr_t fn = mPatchedFns[i];
 
             // Ensure we can write to the code.
-            DWORD op;
+            DWORD op = 0;
             if (!VirtualProtectEx(GetCurrentProcess(), fn, 2, PAGE_EXECUTE_READWRITE, &op)) {
-                // printf("VirtualProtectEx failed! %d\n", GetLastError());
+                fwprintf(stderr, L"VirtualProtectEx failed.\r\n");
                 continue;
             }
 
@@ -67,9 +68,7 @@ public:
             VirtualProtectEx(GetCurrentProcess(), fn, 2, op, &op);
 
             // I don't think this is actually necessary, but it can't hurt.
-            FlushInstructionCache(GetCurrentProcess(),
-                                  /* ignored */ nullptr,
-                                  /* ignored */ 0);
+            FlushInstructionCache(GetCurrentProcess(), nullptr, 0);
         }
     }
 
@@ -77,7 +76,7 @@ public:
     {
         mModule = LoadLibraryExW(modulename, nullptr, 0);
         if (!mModule) {
-            //printf("LoadLibraryEx for '%s' failed\n", modulename);
+            fwprintf(stderr, L"LoadLibraryEx for '%s' failed.\r\n", modulename);
             return;
         }
     }
@@ -90,22 +89,22 @@ public:
         }
 
         if (mPatchedFnsLen == maxPatchedFns) {
-            // printf ("No space for hook in mPatchedFns.\n");
+            fwprintf(stderr, L"No space for hook in mPatchedFns.\r\n");
             return false;
         }
 
-        byteptr_t fn = reinterpret_cast<byteptr_t>(GetProcAddress(mModule, pname));
+        auto fn = reinterpret_cast<byteptr_t>(GetProcAddress(mModule, pname));
         if (!fn) {
-            //printf ("GetProcAddress failed\n");
+            fwprintf(stderr, L"GetProcAddress failed.\r\n");
             return false;
         }
 
         // Ensure we can read and write starting at fn - 5 (for the long jmp we're
         // going to write) and ending at fn + 2 (for the short jmp up to the long
         // jmp).
-        DWORD op;
+        DWORD op = 0;
         if (!VirtualProtectEx(GetCurrentProcess(), fn - 5, 7, PAGE_EXECUTE_READWRITE, &op)) {
-            //printf ("VirtualProtectEx failed! %d\n", GetLastError());
+            fwprintf(stderr, L"VirtualProtectEx failed.\r\n");
             return false;
         }
 
@@ -160,9 +159,7 @@ public:
         *((uint16_t *) (fn)) = 0xf9eb; // jmp $-5
 
         // I think this routine is safe without this, but it can't hurt.
-        FlushInstructionCache(GetCurrentProcess(),
-                              /* ignored */ nullptr,
-                              /* ignored */ 0);
+        FlushInstructionCache(GetCurrentProcess(), nullptr, 0);
 
         return true;
     }
@@ -170,6 +167,9 @@ public:
     bool AddHook(const char *pname, intptr_t hookDest, void **origFunc)
     {
         // Not implemented except on x86-32.
+        UNREFERENCED_PARAMETER(pname);
+        UNREFERENCED_PARAMETER(hookDest);
+        UNREFERENCED_PARAMETER(origFunc);
         return false;
     }
 #endif
@@ -184,8 +184,8 @@ public:
 
     ~WindowsDllDetourPatcher()
     {
-        int i;
-        byteptr_t p;
+        int i = 0;
+        byteptr_t p = nullptr;
         for (i = 0, p = mHookPage; i != mCurHooks; ++i, p += kHookSize) {
 #ifdef _M_IX86
             size_t nBytes = 1 + sizeof(intptr_t);
@@ -196,13 +196,13 @@ public:
 #endif
             byteptr_t origBytes = *((byteptr_t *) p);
             // ensure we can modify the original code
-            DWORD op;
+            DWORD op = 0;
             if (!VirtualProtectEx(GetCurrentProcess(),
                                   origBytes,
                                   nBytes,
                                   PAGE_EXECUTE_READWRITE,
                                   &op)) {
-                //printf ("VirtualProtectEx failed! %d\n", GetLastError());
+                fwprintf(stderr, L"VirtualProtectEx failed.\r\n");
                 continue;
             }
             // Remove the hook by making the original function jump directly
@@ -229,7 +229,7 @@ public:
 
         mModule = LoadLibraryExW(modulename, nullptr, 0);
         if (!mModule) {
-            //printf("LoadLibraryEx for '%s' failed\n", modulename);
+            fwprintf(stderr, L"LoadLibraryEx for '%s' failed.\r\n", modulename);
             return;
         }
 
@@ -260,7 +260,7 @@ public:
             return;
         }
 
-        DWORD op;
+        DWORD op = 0;
         VirtualProtectEx(GetCurrentProcess(),
                          mHookPage,
                          mMaxHooks * kHookSize,
@@ -276,15 +276,15 @@ public:
             return false;
         }
 
-        void *pAddr = GetProcAddress(mModule, pname);
+        auto *pAddr = static_cast<void *>(GetProcAddress(mModule, pname));
         if (!pAddr) {
-            //printf ("GetProcAddress failed\n");
+            fwprintf(stderr, L"GetProcAddress failed.\r\n");
             return false;
         }
 
         CreateTrampoline(pAddr, hookDest, origFunc);
         if (!*origFunc) {
-            //printf ("CreateTrampoline failed\n");
+            fwprintf(stderr, L"CreateTrampoline failed.\r\n");
             return false;
         }
 
@@ -305,8 +305,9 @@ protected:
         *outTramp = nullptr;
 
         byteptr_t tramp = FindTrampolineSpace();
-        if (!tramp)
+        if (!tramp) {
             return;
+        }
 
         byteptr_t origBytes = static_cast<byteptr_t>(origFunction);
 
@@ -366,18 +367,21 @@ protected:
                 // jmp 32bit offset
                 nBytes += 5;
             } else {
-                //printf ("Unknown x86 instruction byte 0x%02x, aborting trampoline\n", origBytes[nBytes]);
+                fwprintf(stderr,
+                         L"Unknown x86 instruction byte 0x%02x, aborting trampoline.\r\n",
+                         origBytes[nBytes]);
                 return;
             }
         }
 #elif defined(_M_X64)
-        byteptr_t directJmpAddr;
+        byteptr_t directJmpAddr = nullptr;
 
         while (nBytes < 13) {
             // if found JMP 32bit offset, next bytes must be NOP
             if (pJmp32 >= 0) {
-                if (origBytes[nBytes++] != 0x90)
+                if (origBytes[nBytes++] != 0x90) {
                     return;
+                }
 
                 continue;
             }
@@ -517,7 +521,7 @@ protected:
 #endif
 
         if (nBytes > 100) {
-            //printf ("Too big!");
+            fwprintf(stderr, L"Too big!");
             return;
         }
 
@@ -572,13 +576,13 @@ protected:
         *outTramp = tramp;
 
         // ensure we can modify the original code
-        DWORD op;
+        DWORD op = 0;
         if (!VirtualProtectEx(GetCurrentProcess(),
                               origFunction,
                               nBytes,
                               PAGE_EXECUTE_READWRITE,
                               &op)) {
-            //printf ("VirtualProtectEx failed! %d\n", GetLastError());
+            fwprintf(stderr, L"VirtualProtectEx failed.\r\n");
             return;
         }
 
