@@ -99,8 +99,7 @@ bool DumpCallback(const char *_dump_dir, const char *_minidump_id, void *context
         const QString dumpFilePath = QString::fromWCharArray(_dump_dir) + QDir::separator()
                                      + QString::fromWCharArray(_minidump_id) + m_dumpFileExtName;
 #elif defined(Q_OS_LINUX)
-        // ### TODO: Finish this.
-        const QString dumpFilePath = {};
+        const QString dumpFilePath = QString::fromUtf8(md.path());
 #elif defined(Q_OS_MACOS)
         const QString dumpFilePath = QString::fromUtf8(_dump_dir) + QDir::separator()
                                      + QString::fromUtf8(_minidump_id) + m_dumpFileExtName;
