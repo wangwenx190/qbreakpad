@@ -104,8 +104,14 @@ bool DumpCallback(const char *_dump_dir, const char *_minidump_id, void *context
         const QString dumpFilePath = QString::fromUtf8(_dump_dir) + QDir::separator()
                                      + QString::fromUtf8(_minidump_id) + m_dumpFileExtName;
 #endif
-        m_crashReporterArguments << m_dumpFileArgument << QDir::toNativeSeparators(dumpFilePath)
-                                 << m_logFileArgument << QDir::toNativeSeparators(m_logFilePath);
+        if (!m_dumpFileArgument.isEmpty()) {
+            m_crashReporterArguments.append(m_dumpFileArgument);
+        }
+        m_crashReporterArguments.append(QDir::toNativeSeparators(dumpFilePath));
+        if (!m_logFileArgument.isEmpty() && !m_logFilePath.isEmpty()) {
+            m_crashReporterArguments << m_logFileArgument
+                                     << QDir::toNativeSeparators(m_logFilePath);
+        }
         QProcess::startDetached(m_reporterPath, m_crashReporterArguments);
     }
 
