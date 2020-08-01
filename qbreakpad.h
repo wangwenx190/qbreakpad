@@ -24,20 +24,21 @@
 
 #pragma once
 
+#include "qbreakpad_global.h"
 #include <QStringList>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void qbreakpad_initCrashHandler(const QString &value);
-bool qbreakpad_writeMiniDump();
-void qbreakpad_setReporterPath(const QString &value);
-void qbreakpad_setReporterCommonArguments(const QStringList &value);
-void qbreakpad_setReporterDumpFileArgument(const QString &value);
-void qbreakpad_setReporterLogFileArgument(const QString &value);
-void qbreakpad_setLogFilePath(const QString &value);
-void qbreakpad_setDumpFileExtName(const QString &value);
+QBREAKPAD_EXPORT void qbreakpad_initCrashHandler(const QString &value);
+QBREAKPAD_EXPORT bool qbreakpad_writeMiniDump();
+QBREAKPAD_EXPORT void qbreakpad_setReporterPath(const QString &value);
+QBREAKPAD_EXPORT void qbreakpad_setReporterCommonArguments(const QStringList &value);
+QBREAKPAD_EXPORT void qbreakpad_setReporterDumpFileArgument(const QString &value);
+QBREAKPAD_EXPORT void qbreakpad_setReporterLogFileArgument(const QString &value);
+QBREAKPAD_EXPORT void qbreakpad_setLogFilePath(const QString &value);
+QBREAKPAD_EXPORT void qbreakpad_setDumpFileExtName(const QString &value);
 
 #ifdef __cplusplus
 }

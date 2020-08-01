@@ -12,10 +12,17 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+if(WIN32)
+    set(CMAKE_DEBUG_POSTFIX d)
+else()
+    set(CMAKE_DEBUG_POSTFIX _debug)
+endif()
+
 find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(unofficial-breakpad)
 
 set(SOURCES
+    qbreakpad_global.h
     qbreakpad.h
     qbreakpad.cpp
 )
@@ -24,7 +31,14 @@ if(WIN32 AND unofficial-breakpad_FOUND)
     list(APPEND SOURCES windowsdllinterceptor.h)
 endif()
 
-add_library(libqbreakpad STATIC ${SOURCES})
+if(WIN32 AND BUILD_SHARED_LIBS)
+    enable_language(RC)
+    list(APPEND SOURCES qbreakpad.rc)
+endif()
+
+add_library(libqbreakpad ${SOURCES})
+
+set_target_properties(libqbreakpad PROPERTIES OUTPUT_NAME QBreakpad)
 
 if(unofficial-breakpad_FOUND)
     target_compile_definitions(libqbreakpad PRIVATE
@@ -40,12 +54,17 @@ else()
     )
 endif()
 
+if(NOT BUILD_SHARED_LIBS)
+    target_compile_definitions(libqbreakpad PRIVATE QBREAKPAD_STATIC)
+endif()
+
 if(MSVC)
     target_compile_options(libqbreakpad PRIVATE /utf-8)
 endif()
 target_compile_definitions(libqbreakpad PRIVATE
     QT_NO_CAST_FROM_ASCII
     QT_NO_CAST_TO_ASCII
+    QBREAKPAD_BUILD_LIBRARY
 )
 if(WIN32)
     target_compile_definitions(libqbreakpad PRIVATE
