@@ -19,7 +19,7 @@ else()
 endif()
 
 find_package(Qt5 COMPONENTS Core REQUIRED)
-find_package(unofficial-breakpad)
+find_package(unofficial-breakpad REQUIRED)
 
 set(SOURCES
     qbreakpad_global.h
@@ -27,7 +27,7 @@ set(SOURCES
     qbreakpad.cpp
 )
 
-if(WIN32 AND unofficial-breakpad_FOUND)
+if(WIN32)
     list(APPEND SOURCES windowsdllinterceptor.h)
 endif()
 
@@ -40,22 +40,8 @@ add_library(libqbreakpad ${SOURCES})
 
 set_target_properties(libqbreakpad PROPERTIES OUTPUT_NAME QBreakpad)
 
-if(unofficial-breakpad_FOUND)
-    target_compile_definitions(libqbreakpad PRIVATE
-        LIBQBREAKPAD_HAS_BREAKPAD=1
-    )
-    target_link_libraries(libqbreakpad PRIVATE
-        unofficial::breakpad::libbreakpad
-        unofficial::breakpad::libbreakpad_client
-    )
-else()
-    target_compile_definitions(libqbreakpad PRIVATE
-        LIBQBREAKPAD_HAS_BREAKPAD=0
-    )
-endif()
-
 if(NOT BUILD_SHARED_LIBS)
-    target_compile_definitions(libqbreakpad PRIVATE QBREAKPAD_STATIC)
+    target_compile_definitions(libqbreakpad PUBLIC QBREAKPAD_STATIC)
 endif()
 
 if(MSVC)
@@ -72,7 +58,11 @@ if(WIN32)
         _CRT_SECURE_NO_WARNINGS
     )
 endif()
-target_link_libraries(libqbreakpad PRIVATE Qt::Core)
+target_link_libraries(libqbreakpad PRIVATE
+    Qt::Core
+    unofficial::breakpad::libbreakpad
+    unofficial::breakpad::libbreakpad_client
+)
 target_include_directories(libqbreakpad PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
 )

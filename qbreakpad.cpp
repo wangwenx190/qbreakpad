@@ -24,7 +24,6 @@
 
 #include "qbreakpad.h"
 
-#if LIBQBREAKPAD_HAS_BREAKPAD
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
@@ -153,11 +152,9 @@ VOID PurecallHandlerFunc()
 #endif
 
 } // namespace
-#endif
 
 void qbreakpad_initCrashHandler(const QString &value)
 {
-#if LIBQBREAKPAD_HAS_BREAKPAD
     if (!m_crashHandler.isNull() || value.isEmpty()) {
         return;
     }
@@ -201,14 +198,10 @@ void qbreakpad_initCrashHandler(const QString &value)
                                                                true,
                                                                0));
 #endif
-#else
-    Q_UNUSED(value)
-#endif
 }
 
 bool qbreakpad_writeMiniDump()
 {
-#if LIBQBREAKPAD_HAS_BREAKPAD
 #ifdef Q_OS_WINDOWS
     const std::wstring path = m_dumpDirPath.toStdWString();
 #else
@@ -219,14 +212,10 @@ bool qbreakpad_writeMiniDump()
         qWarning().noquote() << "Failed to write minidump.";
     }
     return ret;
-#else
-    return true;
-#endif
 }
 
 void qbreakpad_setReporterPath(const QString &value)
 {
-#if LIBQBREAKPAD_HAS_BREAKPAD
     if (value.isEmpty()) {
         return;
     }
@@ -235,47 +224,31 @@ void qbreakpad_setReporterPath(const QString &value)
         return;
     }
     m_reporterPath = path;
-#else
-    Q_UNUSED(value)
-#endif
 }
 
 void qbreakpad_setReporterDumpFileArgument(const QString &value)
 {
-#if LIBQBREAKPAD_HAS_BREAKPAD
     if (m_dumpFileArgument != value) {
         m_dumpFileArgument = value;
     }
-#else
-    Q_UNUSED(value)
-#endif
 }
 
 void qbreakpad_setReporterLogFileArgument(const QString &value)
 {
-#if LIBQBREAKPAD_HAS_BREAKPAD
     if (m_logFileArgument != value) {
         m_logFileArgument = value;
     }
-#else
-    Q_UNUSED(value)
-#endif
 }
 
 void qbreakpad_setReporterCommonArguments(const QStringList &value)
 {
-#if LIBQBREAKPAD_HAS_BREAKPAD
     if (m_crashReporterArguments != value) {
         m_crashReporterArguments = value;
     }
-#else
-    Q_UNUSED(value)
-#endif
 }
 
 void qbreakpad_setLogFilePath(const QString &value)
 {
-#if LIBQBREAKPAD_HAS_BREAKPAD
     if (value.isEmpty()) {
         return;
     }
@@ -284,14 +257,10 @@ void qbreakpad_setLogFilePath(const QString &value)
         return;
     }
     m_logFilePath = path;
-#else
-    Q_UNUSED(value)
-#endif
 }
 
 void qbreakpad_setDumpFileExtName(const QString &value)
 {
-#if LIBQBREAKPAD_HAS_BREAKPAD
     if (value.isEmpty()) {
         return;
     }
@@ -302,7 +271,4 @@ void qbreakpad_setDumpFileExtName(const QString &value)
     if (m_dumpFileExtName != extName) {
         m_dumpFileExtName = extName;
     }
-#else
-    Q_UNUSED(value)
-#endif
 }
