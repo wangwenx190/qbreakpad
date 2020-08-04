@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(qbreakpad LANGUAGES CXX)
+project(QBreakpad LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -36,33 +36,31 @@ if(WIN32 AND BUILD_SHARED_LIBS)
     list(APPEND SOURCES qbreakpad.rc)
 endif()
 
-add_library(libqbreakpad ${SOURCES})
-
-set_target_properties(libqbreakpad PROPERTIES OUTPUT_NAME QBreakpad)
+add_library(${PROJECT_NAME} ${SOURCES})
 
 if(NOT BUILD_SHARED_LIBS)
-    target_compile_definitions(libqbreakpad PUBLIC QBREAKPAD_STATIC)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC QBREAKPAD_STATIC)
 endif()
 
 if(MSVC)
-    target_compile_options(libqbreakpad PRIVATE /utf-8)
+    target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
 endif()
-target_compile_definitions(libqbreakpad PRIVATE
+target_compile_definitions(${PROJECT_NAME} PRIVATE
     QT_NO_CAST_FROM_ASCII
     QT_NO_CAST_TO_ASCII
     QBREAKPAD_BUILD_LIBRARY
 )
 if(WIN32)
-    target_compile_definitions(libqbreakpad PRIVATE
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
         WIN32_LEAN_AND_MEAN
         _CRT_SECURE_NO_WARNINGS
     )
 endif()
-target_link_libraries(libqbreakpad PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt::Core
     unofficial::breakpad::libbreakpad
     unofficial::breakpad::libbreakpad_client
 )
-target_include_directories(libqbreakpad PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
 )
