@@ -18,7 +18,8 @@ else()
     set(CMAKE_DEBUG_POSTFIX _debug)
 endif()
 
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 find_package(unofficial-breakpad REQUIRED)
 
 set(SOURCES
@@ -61,7 +62,7 @@ if(WIN32)
     )
 endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    Qt::Core
+    Qt${QT_VERSION_MAJOR}::Core
     unofficial::breakpad::libbreakpad
     unofficial::breakpad::libbreakpad_client
 )
