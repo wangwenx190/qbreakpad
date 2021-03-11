@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+/*
+ * Copied from https://github.com/md748/QBreakpad/blob/master/breakpad/WindowsDllInterceptor.h
+ * With some modifications, most of them are format changes.
+ */
+
 #pragma once
 
 #ifndef WIN32_LEAN_AND_MEAN
